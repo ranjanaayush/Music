@@ -1,0 +1,23 @@
+# Assuming dt_RBNS_All is your dataset with columns like: country, currency, branch, state, payment_count, cumulative_payment, etc.
+
+# Separate the dataset into train and test based on the flag (flgTrain)
+train_data <- dt_RBNS_All[dt_RBNS_All$flgTrain == 1, ]
+test_data <- dt_RBNS_All[dt_RBNS_All$flgTrain == 0, ]
+
+# Prepare the train set:
+# Use actual Target 1 values for the train set
+train_set <- train_data[, c('country', 'currency', 'branch', 'state', 'payment_count', 'cumulative_payment', 
+                            'days_since_last_pay', 'delay_acc_rep', 'delay_rep_pay', 'delay_acc_val')]
+train_set$target_1 <- train_data$target_1  # Actual target 1 values (ground truth)
+
+# Prepare the test set:
+# Use predicted Target 1 values (from preds_full) for the test set
+test_set <- test_data[, c('country', 'currency', 'branch', 'state', 'payment_count', 'cumulative_payment', 
+                          'days_since_last_pay', 'delay_acc_rep', 'delay_rep_pay', 'delay_acc_val')]
+test_set$target_1 <- test_data$preds_full  # Predicted Target 1 values (from the first model)
+
+# Combine the train and test sets into a final dataset:
+final_dataset <- rbind(train_set, test_set)
+
+# Now, final_dataset contains the features (train and test) with actual Target 1 for training and predicted Target 1 for testing.
+# This dataset is ready for use in training the second model to predict Target 2.
