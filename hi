@@ -1,49 +1,42 @@
-import re
 import torch
-from torch.nn.utils.rnn import pad_sequence
-from collections import Counter
-from nltk.tokenize import word_tokenize
-import nltk
-nltk.download('punkt')
+import math
+import matplotlib.pyplot as plt
 
-# 1. Load a small dataset
-text = """
-Once upon a time, there was a little robot who dreamed of writing stories.
-Every night, it would read books and try to generate its own tales.
-Some were funny, others were wise, and all were unique in their own way.
-"""
+# Define Positional Encoding function
+def get_positional_encoding(seq_len, d_model):
+    pe = torch.zeros(seq_len, d_model)
+    position = torch.arange(0, seq_len).unsqueeze(1)
+    div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+    
+    pe[:, 0::2] = torch.sin(position * div_term)
+    pe[:, 1::2] = torch.cos(position * div_term)
+    
+    return pe
 
-# 2. Clean the dataset (lowercase + remove punctuation)
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
-    return text
+# Parameters
+SEQ_LEN = 10       # same as in Task 1
+D_MODEL = 16       # embedding dimension
 
-cleaned_text = clean_text(text)
+# Generate positional encoding
+pos_encoding = get_positional_encoding(SEQ_LEN, D_MODEL)
 
-# 3. Tokenize into words
-tokens = word_tokenize(cleaned_text)
+# Visualize positional encoding
+plt.figure(figsize=(10, 6))
+plt.plot(pos_encoding[:, :8])  # show first 8 dimensions
+plt.title("Positional Encoding (first 8 dimensions)")
+plt.xlabel("Position in Sequence")
+plt.ylabel("Encoding Value")
+plt.grid(True)
+plt.show()
 
-# 4. Build vocabulary
-vocab = Counter(tokens)
-vocab = {word: idx + 2 for idx, (word, _) in enumerate(vocab.most_common())}
-vocab["<PAD>"] = 0
-vocab["<UNK>"] = 1
 
-# 5. Encode tokens
-encoded = [vocab.get(word, vocab["<UNK>"]) for word in tokens]
 
-# 6. Create fixed-length sequences and attention masks
-SEQ_LEN = 10
-sequences = []
-for i in range(len(encoded) - SEQ_LEN):
-    seq = encoded[i:i+SEQ_LEN]
-    sequences.append(torch.tensor(seq))
 
-# Pad sequences (if needed)
-padded_sequences = pad_sequence(sequences, batch_first=True, padding_value=vocab["<PAD>"])
-attention_masks = (padded_sequences != vocab["<PAD>"]).int()
+# Example: assume `token_embeddings` is a tensor of shape (SEQ_LEN, D_MODEL)
+token_embeddings = torch.randn(SEQ_LEN, D_MODEL)  # simulated
 
-print("Sample sequence:", padded_sequences[0])
-print("Attention mask: ", attention_masks[0])
-print("Vocab size: ", len(vocab))
+# Add positional encoding
+embedded_with_pe = token_embeddings + pos_encoding
+
+print("Token Embedding Shape:", token_embeddings.shape)
+print("Final Embedded Input (with PE):", embedded_with_pe)
