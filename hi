@@ -1,23 +1,49 @@
-# Assuming dt_RBNS_All is your dataset with columns like: country, currency, branch, state, payment_count, cumulative_payment, etc.
+import re
+import torch
+from torch.nn.utils.rnn import pad_sequence
+from collections import Counter
+from nltk.tokenize import word_tokenize
+import nltk
+nltk.download('punkt')
 
-# Separate the dataset into train and test based on the flag (flgTrain)
-train_data <- dt_RBNS_All[dt_RBNS_All$flgTrain == 1, ]
-test_data <- dt_RBNS_All[dt_RBNS_All$flgTrain == 0, ]
+# 1. Load a small dataset
+text = """
+Once upon a time, there was a little robot who dreamed of writing stories.
+Every night, it would read books and try to generate its own tales.
+Some were funny, others were wise, and all were unique in their own way.
+"""
 
-# Prepare the train set:
-# Use actual Target 1 values for the train set
-train_set <- train_data[, c('country', 'currency', 'branch', 'state', 'payment_count', 'cumulative_payment', 
-                            'days_since_last_pay', 'delay_acc_rep', 'delay_rep_pay', 'delay_acc_val')]
-train_set$target_1 <- train_data$target_1  # Actual target 1 values (ground truth)
+# 2. Clean the dataset (lowercase + remove punctuation)
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
+    return text
 
-# Prepare the test set:
-# Use predicted Target 1 values (from preds_full) for the test set
-test_set <- test_data[, c('country', 'currency', 'branch', 'state', 'payment_count', 'cumulative_payment', 
-                          'days_since_last_pay', 'delay_acc_rep', 'delay_rep_pay', 'delay_acc_val')]
-test_set$target_1 <- test_data$preds_full  # Predicted Target 1 values (from the first model)
+cleaned_text = clean_text(text)
 
-# Combine the train and test sets into a final dataset:
-final_dataset <- rbind(train_set, test_set)
+# 3. Tokenize into words
+tokens = word_tokenize(cleaned_text)
 
-# Now, final_dataset contains the features (train and test) with actual Target 1 for training and predicted Target 1 for testing.
-# This dataset is ready for use in training the second model to predict Target 2.
+# 4. Build vocabulary
+vocab = Counter(tokens)
+vocab = {word: idx + 2 for idx, (word, _) in enumerate(vocab.most_common())}
+vocab["<PAD>"] = 0
+vocab["<UNK>"] = 1
+
+# 5. Encode tokens
+encoded = [vocab.get(word, vocab["<UNK>"]) for word in tokens]
+
+# 6. Create fixed-length sequences and attention masks
+SEQ_LEN = 10
+sequences = []
+for i in range(len(encoded) - SEQ_LEN):
+    seq = encoded[i:i+SEQ_LEN]
+    sequences.append(torch.tensor(seq))
+
+# Pad sequences (if needed)
+padded_sequences = pad_sequence(sequences, batch_first=True, padding_value=vocab["<PAD>"])
+attention_masks = (padded_sequences != vocab["<PAD>"]).int()
+
+print("Sample sequence:", padded_sequences[0])
+print("Attention mask: ", attention_masks[0])
+print("Vocab size: ", len(vocab))
