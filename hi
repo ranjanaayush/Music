@@ -1,42 +1,9 @@
-import torch
-import math
-import matplotlib.pyplot as plt
-
-# Define Positional Encoding function
-def get_positional_encoding(seq_len, d_model):
-    pe = torch.zeros(seq_len, d_model)
-    position = torch.arange(0, seq_len).unsqueeze(1)
-    div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
-    
-    pe[:, 0::2] = torch.sin(position * div_term)
-    pe[:, 1::2] = torch.cos(position * div_term)
-    
-    return pe
-
-# Parameters
-SEQ_LEN = 10       # same as in Task 1
-D_MODEL = 16       # embedding dimension
-
-# Generate positional encoding
-pos_encoding = get_positional_encoding(SEQ_LEN, D_MODEL)
-
-# Visualize positional encoding
-plt.figure(figsize=(10, 6))
-plt.plot(pos_encoding[:, :8])  # show first 8 dimensions
-plt.title("Positional Encoding (first 8 dimensions)")
-plt.xlabel("Position in Sequence")
-plt.ylabel("Encoding Value")
-plt.grid(True)
-plt.show()
+https://chatgpt.com/share/6864f185-f424-8002-9b7a-e1d728bf51aa
 
 
 
 
-# Example: assume `token_embeddings` is a tensor of shape (SEQ_LEN, D_MODEL)
-token_embeddings = torch.randn(SEQ_LEN, D_MODEL)  # simulated
 
-# Add positional encoding
-embedded_with_pe = token_embeddings + pos_encoding
 
-print("Token Embedding Shape:", token_embeddings.shape)
-print("Final Embedded Input (with PE):", embedded_with_pe)
+
+
