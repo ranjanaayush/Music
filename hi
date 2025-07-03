@@ -1,6 +1,1 @@
-dt_policy_joined <- dt_policy_joined %>%
-  select(
-    policy_no, claim_no, claims_incurred,
-    accident_date, report_date, payment_date, settlement_date,
-    everything()
-  )
+https://chatgpt.com/share/68666cf5-a3d4-8007-941f-7d6851982485
