@@ -1,23 +1,6 @@
-library(dplyr)
-
-# Step 1: Define replacement date
-replacement_date <- as.Date("31-12-2199", format = "%d-%m-%Y")
-
-# Step 2: Convert date columns from character ("dd-mm-yyyy") to Date
 dt_policy_joined <- dt_policy_joined %>%
-  mutate(
-    accident_date   = as.Date(accident_date, format = "%d-%m-%Y"),
-    payment_date    = as.Date(payment_date, format = "%d-%m-%Y"),
-    report_date     = as.Date(report_date, format = "%d-%m-%Y"),
-    settlement_date = as.Date(settlement_date, format = "%d-%m-%Y")
-  )
-
-# Step 3: Apply replacements where claim_no is NA
-dt_policy_joined <- dt_policy_joined %>%
-  mutate(
-    claims_incurred = if_else(is.na(claim_no), 0, claims_incurred),
-    accident_date   = if_else(is.na(claim_no), replacement_date, accident_date),
-    payment_date    = if_else(is.na(claim_no), replacement_date, payment_date),
-    report_date     = if_else(is.na(claim_no), replacement_date, report_date),
-    settlement_date = if_else(is.na(claim_no), replacement_date, settlement_date)
+  select(
+    policy_no, claim_no, claims_incurred,
+    accident_date, report_date, payment_date, settlement_date,
+    everything()
   )
