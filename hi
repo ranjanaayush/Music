@@ -1,23 +1,20 @@
-Subject: Formal Resignation – Aayush Ranjan
+library(dplyr)
+library(lubridate)
 
-Dear [Manager’s Name],
+# Step 1: Clean join (with selected columns from claim table)
+dt_policy_joined <- dt_policy %>%
+  left_join(
+    dt_policy_claim %>%
+      select(policy_no, claim_no, claims_incurred, accident_date, payment_date, report_date, settlement_date),
+    by = "policy_no"
+  )
 
-I hope you are doing well.
-
-I would like to formally submit my resignation from my role at EXL Service, with my last working day being Friday, 12th July 2025.
-
-I have recently received an admission offer from IIT Hyderabad for the M.Tech program in Computer Science and Engineering, which I have decided to pursue as it aligns strongly with my long-term goals in data science and technology.
-
-I am currently in the final phase of the insurance reserves prediction model project, working closely with Arun and Anurang. I will ensure that all my responsibilities are completed by the end of next week and that a proper handover is done before my departure.
-
-I sincerely appreciate the support, mentorship, and opportunities provided to me during my time here. The experience at EXL has been instrumental in shaping my technical and professional skills.
-
-Kindly consider this as my official resignation and let me know the steps to initiate the exit process. I am happy to assist in any way needed during this transition.
-
-Thank you once again.
-
-Best regards,
-Aayush Ranjan
-Employee ID: [Your Employee ID]
-Email: [Your Official Email ID]
-Contact: [Your Phone Number]
+# Step 2: Replace values for rows where claim_no is NA
+dt_policy_joined <- dt_policy_joined %>%
+  mutate(
+    claims_incurred = if_else(is.na(claim_no), 0, claims_incurred),
+    accident_date    = if_else(is.na(claim_no), as.Date("2199-12-31"), accident_date),
+    payment_date     = if_else(is.na(claim_no), as.Date("2199-12-31"), payment_date),
+    report_date      = if_else(is.na(claim_no), as.Date("2199-12-31"), report_date),
+    settlement_date  = if_else(is.na(claim_no), as.Date("2199-12-31"), settlement_date)
+  )
